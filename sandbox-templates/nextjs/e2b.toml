@@ -1,0 +1,17 @@
+# This is a config for E2B sandbox template.
+# You can use template ID (mc8irl3ksa7bgeiz5513) or template name (noovix-nextjs-test-2) to create a sandbox:
+
+# Python SDK
+# from e2b import Sandbox, AsyncSandbox
+# sandbox = Sandbox("noovix-nextjs-test-2") # Sync sandbox
+# sandbox = await AsyncSandbox.create("noovix-nextjs-test-2") # Async sandbox
+
+# JS SDK
+# import { Sandbox } from 'e2b'
+# const sandbox = await Sandbox.create('noovix-nextjs-test-2')
+
+team_id = "d6ed9995-a0e7-4db6-98da-273cd01d0639"
+start_cmd = "/compile_page.sh"
+dockerfile = "e2b.Dockerfile"
+template_name = "noovix-nextjs-test-2"
+template_id = "mc8irl3ksa7bgeiz5513"
