@@ -2,17 +2,18 @@ import { inngest } from "@/inngest/client"
 import {prisma} from "@/lib/db"
 import { baseProcedure, createTRPCRouter } from "@/trpc/init"
 import { z } from "zod"
+import { generateSlug } from  "random-word-slugs";
 
-export const messageRoute = createTRPCRouter({
+export const projectsRoute = createTRPCRouter({
     getMany: baseProcedure
         .query(async () => {
-            const message = await prisma.message.findMany({
+            const projects = await prisma.project.findMany({
                 orderBy: {
                     updatedAt: "asc",
                 },
             });
             
-            return message;
+            return projects;
         })
     ,
 
@@ -20,16 +21,21 @@ export const messageRoute = createTRPCRouter({
         .input(
             z.object({
                 value: z.string().min(1, { message: "Value is required" }).max(10000, { message: "Value must be less than 10000 characters" }),
-                projectId: z.string().min(1, { message: "Project ID is required" }),
             })
         )
         .mutation(async ({ input }) => {
-            const createMessage = await prisma.message.create({
+            const createdProject = await prisma.project.create({
                 data: {
-                    projectId: input.projectId,
-                    content: input.value,
-                    role: "USER",
-                    type: "RESULT",
+                    name: generateSlug(2, {
+                        format: "kebab",
+                    }),
+                    messages: {
+                        create: {
+                            content: input.value,
+                            role: "USER",
+                            type: "RESULT",
+                        }
+                    }
                 }
             })
 
@@ -37,10 +43,10 @@ export const messageRoute = createTRPCRouter({
                 name: "code-agent/run",
                 data: {
                     value: input.value,
-                    projectId: input.projectId,
+                    projectId: createdProject.id,
                 },
-            });
+            })
 
-            return createMessage;
+            return createdProject;
         }),
 }) 
