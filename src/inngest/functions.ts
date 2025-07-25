@@ -162,6 +162,7 @@ export const codeAgentFunction = inngest.createFunction(
 
     await step.run("save-result", async () => {
       if (isError) {
+        console.error(result.state.data.summary)
         return prisma.message.create({
           data: {
             projectId: event.data.projectId,
