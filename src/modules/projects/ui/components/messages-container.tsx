@@ -18,6 +18,7 @@ export const MessagesContainer = ({
     setActiveFragment
 }: props) => {
     const bottomRef = useRef<HTMLDivElement>(null);
+    const lastAssistantMessageIdRef = useRef<string | null>(null);
 
     const trpc = useTRPC();
     const { data: messages } = useSuspenseQuery(trpc.message.getMany.queryOptions({
@@ -26,17 +27,20 @@ export const MessagesContainer = ({
         refetchInterval: 5000,
     }));
 
-    //TODO: This is causing some trouble with the initial fragment selection
 
-    // useEffect(() => {
-    //     const lastAssistantMessageWithFragment = messages.findLast(
-    //         (message) => message.role === "ASSISTANT" && !!message.Fragment,
-    //     )
+    useEffect(() => {
+        const lastAssistantMessage = messages.findLast(
+            (message) => message.role === "ASSISTANT",
+        );
 
-    //     if (lastAssistantMessageWithFragment) {
-    //         setActiveFragment(lastAssistantMessageWithFragment.Fragment);
-    //     }
-    // }, [messages, setActiveFragment]);
+        if (
+            lastAssistantMessage?.Fragment &&
+            lastAssistantMessage.id !== lastAssistantMessageIdRef.current
+        ) {
+            setActiveFragment(lastAssistantMessage.Fragment);
+            lastAssistantMessageIdRef.current = lastAssistantMessage.id
+        }
+    }, [messages, setActiveFragment]);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" })
