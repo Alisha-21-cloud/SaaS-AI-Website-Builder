@@ -40,8 +40,10 @@ export function ProjectForm() {
             queryClient.invalidateQueries(
                 trpc.projects.getMany.queryOptions()
             );
+            queryClient.invalidateQueries(
+                trpc.usage.status.queryOptions()
+            )
             router.push(`/projects/${data?.id}`)
-            // TODO: Invalidate usage status
         },
         onError: (error) => {
             // TODO: Redirect to pricing page if specific error
@@ -51,6 +53,10 @@ export function ProjectForm() {
             }
 
             toast.error(error.message);
+
+            if (error.data?.code === "TOO_MANY_REQUESTS") {
+                router.push("/pricing")
+            }
         }
     }))
 

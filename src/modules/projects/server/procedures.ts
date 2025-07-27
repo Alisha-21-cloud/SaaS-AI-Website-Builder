@@ -1,9 +1,10 @@
 import { inngest } from "@/inngest/client"
-import {prisma} from "@/lib/db"
+import { prisma } from "@/lib/db"
 import { protectedProcedure, createTRPCRouter } from "@/trpc/init"
 import { z } from "zod"
-import { generateSlug } from  "random-word-slugs";
+import { generateSlug } from "random-word-slugs";
 import { TRPCError } from "@trpc/server";
+import { consumeCredits } from "@/lib/usage";
 
 export const projectsRoute = createTRPCRouter({
     getOne: protectedProcedure
@@ -21,12 +22,12 @@ export const projectsRoute = createTRPCRouter({
             if (!existingProject) {
                 throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" })
             }
-            
+
             return existingProject;
         })
     ,
     getMany: protectedProcedure
-        .query(async ( {ctx} ) => {
+        .query(async ({ ctx }) => {
             const projects = await prisma.project.findMany({
                 where: {
                     userId: ctx.auth.userId
@@ -35,7 +36,7 @@ export const projectsRoute = createTRPCRouter({
                     updatedAt: "asc",
                 },
             });
-            
+
             return projects;
         })
     ,
@@ -47,6 +48,20 @@ export const projectsRoute = createTRPCRouter({
             })
         )
         .mutation(async ({ input, ctx }) => {
+
+            try {
+                await consumeCredits();
+            } catch (error) {
+                if (error instanceof Error) {
+                    throw new TRPCError({ code: "UNAUTHORIZED", message: error.message })
+                } else {
+                    throw new TRPCError({
+                        code: "TOO_MANY_REQUESTS",
+                        message: "You have reached your request limit"
+                    })
+                }
+            }
+
             const createdProject = await prisma.project.create({
                 data: {
                     userId: ctx.auth.userId,
