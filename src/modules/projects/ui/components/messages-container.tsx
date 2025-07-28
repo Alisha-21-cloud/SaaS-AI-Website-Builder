@@ -24,7 +24,7 @@ export const MessagesContainer = ({
     const { data: messages } = useSuspenseQuery(trpc.message.getMany.queryOptions({
         projectId: projectId
     }, {
-        refetchInterval: 5000,
+        refetchInterval: 2000,
     }));
 
 
