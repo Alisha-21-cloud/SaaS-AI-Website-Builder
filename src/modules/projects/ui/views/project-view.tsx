@@ -19,6 +19,7 @@ import { FileExplorer } from "@/components/file-explorer";
 import { UserControl } from "@/components/user-control";
 
 import { useAuth } from "@clerk/nextjs";
+import { ErrorBoundary } from "react-error-boundary";
 
 interface Props {
     projectId: string;
@@ -31,29 +32,33 @@ export const ProjectView = ({ projectId }: Props) => {
     const [activeFragment, setActiveFragment] = useState<Fragment | null>(null);
     const [tabState, setTabState] = useState<"preview" | "code">("preview");
 
-    return(
+    return (
         <div className="h-screen">
             <ResizablePanelGroup direction="horizontal">
                 <ResizablePanel
-                 defaultSize={35}
-                 minSize={20}
-                 className="flex flex-col min-h-0"
-                >   
-                    <Suspense fallback={<p>Loading project...</p>}>
-                        <ProjectHeader projectId={projectId} />
-                    </Suspense>
-                    <Suspense fallback={<p>Loading messages...</p>}>
-                        <MessagesContainer
-                            projectId={projectId}
-                            activeFragment={activeFragment}
-                            setActiveFragment={setActiveFragment}
-                        />
-                    </Suspense>
+                    defaultSize={35}
+                    minSize={20}
+                    className="flex flex-col min-h-0"
+                >
+                    <ErrorBoundary fallback={<p>Loading messages...</p>}>
+                        <Suspense fallback={<p>Loading project...</p>}>
+                            <ProjectHeader projectId={projectId} />
+                        </Suspense>
+                    </ErrorBoundary>
+                    <ErrorBoundary fallback={<p>Messages container error</p>}>
+                        <Suspense fallback={<p>Loading messages...</p>}>
+                            <MessagesContainer
+                                projectId={projectId}
+                                activeFragment={activeFragment}
+                                setActiveFragment={setActiveFragment}
+                            />
+                        </Suspense>
+                    </ErrorBoundary>
                 </ResizablePanel>
                 <ResizableHandle className="hover:bg-primary transition-colors" />
-                <ResizablePanel 
-                 defaultSize={65}
-                 minSize={50}
+                <ResizablePanel
+                    defaultSize={65}
+                    minSize={50}
                 >
                     <Tabs
                         className="h-full gap-y-0"
